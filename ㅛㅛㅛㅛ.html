@@ -1,191 +1,125 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>간단한 게시판</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-        }
-        header {
-            background-color: #4CAF50;
-            color: white;
-            text-align: center;
-            padding: 1rem 0;
-        }
-        .container {
-            width: 90%;
-            max-width: 800px;
-            margin: 2rem auto;
-            background: white;
-            padding: 1.5rem;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-        .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-        .form-group button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 0.7rem 1.5rem;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-        .form-group button:hover {
-            background-color: #45a049;
-        }
-        .hidden {
-            display: none;
-        }
-        .post {
-            border-bottom: 1px solid #ddd;
-            padding: 1rem 0;
-        }
-        .post:last-child {
-            border-bottom: none;
-        }
-        .post h3 {
-            margin: 0 0 0.5rem;
-        }
-        .post p {
-            margin: 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4f0ff">
+  <title>오늘의 조각</title>
+  <style>
+    :root { --ink: #201b2c; --muted: #766f87; --paper: #fffdf9; --line: #e9e2f2; --violet: #7457dd; --violet-dark: #5940b9; --mint: #b9eed9; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; background: radial-gradient(circle at 8% 2%, #fff0c9 0 10%, transparent 28%), radial-gradient(circle at 96% 13%, #d9d0ff 0 11%, transparent 30%), #f7f4fb; min-height: 100vh; }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .shell { width: min(1040px, calc(100% - 32px)); margin: auto; }
+    header { padding: 26px 0 70px; }
+    nav { display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 800; letter-spacing: -0.6px; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 12px; background: var(--ink); color: #ffe588; font-size: 18px; transform: rotate(-7deg); }
+    .date { color: var(--muted); font-size: 14px; }
+    .hero { max-width: 690px; padding-top: 84px; }
+    .eyebrow { display: inline-flex; padding: 7px 11px; border: 1px solid #dbcfff; border-radius: 999px; background: #ffffffa6; color: var(--violet-dark); font-size: 13px; font-weight: 700; }
+    h1 { margin: 17px 0 14px; font-family: Georgia, "Times New Roman", serif; font-size: clamp(43px, 7vw, 78px); line-height: .99; letter-spacing: -3.6px; font-weight: 500; }
+    .hero p { margin: 0; max-width: 500px; color: #5d566c; font-size: 17px; line-height: 1.7; letter-spacing: -0.3px; }
+    main { padding-bottom: 72px; }
+    .composer { position: relative; margin-top: -30px; padding: 22px; background: var(--paper); border: 1px solid #fff; border-radius: 22px; box-shadow: 0 18px 50px rgba(60, 40, 105, .12); }
+    .composer-top { display: flex; align-items: center; gap: 12px; }
+    .avatar { width: 39px; height: 39px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; background: #c4b5fd; color: #3e297b; font-weight: 800; }
+    .prompt { color: var(--muted); font-size: 15px; }
+    .write-button { margin-left: auto; padding: 10px 15px; border: 0; border-radius: 11px; background: var(--ink); color: white; font-size: 14px; font-weight: 700; }
+    .write-button:hover, .publish:hover { background: var(--violet-dark); }
+    #post-form { overflow: hidden; max-height: 0; opacity: 0; transition: max-height .35s ease, opacity .25s ease, margin .25s ease; }
+    #post-form.open { max-height: 650px; opacity: 1; margin-top: 20px; }
+    .field { width: 100%; border: 1px solid var(--line); outline: 0; border-radius: 12px; background: #fff; color: var(--ink); transition: border-color .2s, box-shadow .2s; }
+    .field:focus { border-color: #a993ed; box-shadow: 0 0 0 4px #ede8ff; }
+    input.field { padding: 12px 14px; font-size: 15px; font-weight: 700; }
+    textarea.field { min-height: 116px; margin-top: 10px; padding: 13px 14px; resize: vertical; line-height: 1.55; }
+    .form-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 13px; }
+    .upload-label { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 14px; cursor: pointer; }
+    .upload-label input { display: none; }
+    .publish { padding: 10px 18px; border: 0; border-radius: 10px; background: var(--violet); color: white; font-weight: 800; }
+    .feed-head { display: flex; justify-content: space-between; align-items: end; margin: 54px 0 18px; }
+    .feed-head h2 { margin: 0; font-size: 22px; letter-spacing: -1px; }
+    .count { color: var(--muted); font-size: 14px; }
+    #posts { display: grid; gap: 16px; }
+    .post { padding: 22px; border: 1px solid var(--line); border-radius: 19px; background: #ffffffcf; box-shadow: 0 7px 20px rgba(53, 35, 82, .04); }
+    .post-meta { display: flex; align-items: center; gap: 10px; }
+    .post .avatar { width: 34px; height: 34px; background: var(--mint); color: #24775b; font-size: 13px; }
+    .post-author { font-size: 14px; font-weight: 800; }
+    .post-time { color: var(--muted); font-size: 12px; }
+    .post-title { margin: 18px 0 8px; font-family: Georgia, "Times New Roman", serif; font-size: 25px; font-weight: 500; letter-spacing: -1.1px; }
+    .post-content { margin: 0; color: #595263; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+    .media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px; margin-top: 17px; }
+    .media-grid img, .media-grid video { display: block; width: 100%; max-height: 310px; object-fit: cover; border-radius: 12px; background: #eee9f7; }
+    .post-actions { display: flex; align-items: center; gap: 8px; margin-top: 19px; }
+    .action { padding: 7px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 13px; }
+    .action:hover { background: #f0ecfa; color: var(--violet-dark); }
+    .delete { margin-left: auto; }
+    .empty { padding: 40px 20px; border: 1px dashed #d7cde7; border-radius: 18px; text-align: center; color: var(--muted); background: #ffffff80; }
+    @media (max-width: 600px) { header { padding-bottom: 54px; } .hero { padding-top: 60px; } h1 { letter-spacing: -2.5px; } .date { display: none; } .composer { padding: 16px; } .prompt { display: none; } .post { padding: 18px; } }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>간단한 게시판</h1>
-    </header>
-    <div class="container">
-        <button id="toggleUpload">업로드 창 열기</button>
-        <div id="uploadForm" class="hidden">
-            <div class="form-group">
-                <label for="title">제목</label>
-                <input type="text" id="title" placeholder="제목을 입력하세요">
-            </div>
-            <div class="form-group">
-                <label for="content">내용</label>
-                <textarea id="content" rows="5" placeholder="내용을 입력하세요"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="media">사진/동영상 업로드</label>
-                <input type="file" id="media" accept="image/*,video/*" multiple>
-            </div>
-            <div class="form-group">
-                <button id="submit">글 올리기</button>
-            </div>
-        </div>
-        <div id="posts">
-            <!-- 게시글 목록이 여기에 추가됩니다 -->
-        </div>
-    </div>
-    <script>
-        const toggleUploadButton = document.getElementById('toggleUpload');
-        const uploadForm = document.getElementById('uploadForm');
-        const submitButton = document.getElementById('submit');
-        const titleInput = document.getElementById('title');
-        const contentInput = document.getElementById('content');
-        const mediaInput = document.getElementById('media');
-        const postsContainer = document.getElementById('posts');
+  <header class="shell">
+    <nav><div class="brand"><span class="brand-mark">✦</span>오늘의 조각</div><span class="date" id="today"></span></nav>
+    <section class="hero"><span class="eyebrow">나의 작은 기록장</span><h1>오늘을, 한 조각씩<br>남겨 보세요.</h1><p>기억하고 싶은 생각, 반짝였던 순간, 그리고 아직 이름 붙지 않은 감정을 이곳에 모아두세요.</p></section>
+  </header>
+  <main class="shell">
+    <section class="composer" aria-label="새 기록 작성">
+      <div class="composer-top"><span class="avatar">나</span><span class="prompt">지금 떠오르는 장면이 있나요?</span><button class="write-button" id="toggle-form" type="button">기록하기</button></div>
+      <form id="post-form">
+        <input class="field" id="title" maxlength="80" placeholder="제목을 적어주세요" aria-label="제목" required>
+        <textarea class="field" id="content" maxlength="1000" placeholder="오늘의 이야기를 들려주세요" aria-label="내용" required></textarea>
+        <div class="form-footer"><label class="upload-label">▧ 사진 또는 영상 첨부<input id="media" type="file" accept="image/*,video/*" multiple></label><button class="publish" type="submit">조각 남기기</button></div>
+      </form>
+    </section>
+    <div class="feed-head"><h2>모아둔 조각들</h2><span class="count" id="count"></span></div>
+    <section id="posts" aria-live="polite"></section>
+  </main>
+  <script>
+    const storageKey = 'todays-pieces-v2';
+    const form = document.getElementById('post-form');
+    const postsElement = document.getElementById('posts');
+    const mediaInput = document.getElementById('media');
+    const date = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }).format(new Date());
+    document.getElementById('today').textContent = date;
 
-        toggleUploadButton.addEventListener('click', () => {
-            uploadForm.classList.toggle('hidden');
-        });
+    const samplePosts = [{ id: 'welcome', title: '처음의 페이지', content: '어떤 하루든 기록할 이유가 있어요. 마음에 남는 한 장면부터 천천히 적어보세요.', createdAt: new Date().toISOString(), likes: 3, media: [] }];
+    const getPosts = () => { try { return JSON.parse(localStorage.getItem(storageKey)) ?? samplePosts; } catch { return samplePosts; } };
+    const savePosts = posts => localStorage.setItem(storageKey, JSON.stringify(posts));
+    const escapeInitial = text => (text || '나').trim().charAt(0).toUpperCase();
+    const relativeTime = iso => { const mins = Math.max(0, Math.floor((Date.now() - new Date(iso)) / 60000)); return mins < 1 ? '방금 전' : mins < 60 ? `${mins}분 전` : mins < 1440 ? `${Math.floor(mins / 60)}시간 전` : new Intl.DateTimeFormat('ko-KR', { month: 'short', day: 'numeric' }).format(new Date(iso)); };
 
-        function savePostsToLocalStorage(posts) {
-            localStorage.setItem('posts', JSON.stringify(posts));
-        }
-
-        function loadPostsFromLocalStorage() {
-            const posts = localStorage.getItem('posts');
-            return posts ? JSON.parse(posts) : [];
-        }
-
-        function createPostElement(post) {
-            const postDiv = document.createElement('div');
-            postDiv.classList.add('post');
-
-            const postTitle = document.createElement('h3');
-            postTitle.textContent = post.title;
-
-            const postContent = document.createElement('p');
-            postContent.textContent = post.content;
-
-            postDiv.appendChild(postTitle);
-            postDiv.appendChild(postContent);
-
-            if (post.media && post.media.length > 0) {
-                post.media.forEach(mediaSrc => {
-                    const mediaElement = document.createElement(mediaSrc.type.startsWith('image') ? 'img' : 'video');
-                    mediaElement.src = mediaSrc.src;
-                    mediaElement.controls = true;
-                    mediaElement.style.maxWidth = '100%';
-                    mediaElement.style.marginTop = '1rem';
-                    postDiv.appendChild(mediaElement);
-                });
-            }
-
-            postsContainer.appendChild(postDiv);
-        }
-
-        function createPost(title, content, mediaFiles) {
-            const mediaArray = mediaFiles.map(file => ({
-                src: URL.createObjectURL(file),
-                type: file.type
-            }));
-
-            const newPost = {
-                title,
-                content,
-                media: mediaArray
-            };
-
-            const posts = loadPostsFromLocalStorage();
-            posts.push(newPost);
-            savePostsToLocalStorage(posts);
-
-            createPostElement(newPost);
-        }
-
-        submitButton.addEventListener('click', () => {
-            const title = titleInput.value.trim();
-            const content = contentInput.value.trim();
-            const mediaFiles = Array.from(mediaInput.files);
-
-            if (title && content) {
-                createPost(title, content, mediaFiles);
-                titleInput.value = '';
-                contentInput.value = '';
-                mediaInput.value = '';
-                uploadForm.classList.add('hidden');
-            } else {
-                alert('제목과 내용을 모두 입력하세요!');
-            }
-        });
-
-        // Load posts from localStorage on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            const posts = loadPostsFromLocalStorage();
-            posts.forEach(createPostElement);
-        });
-    </script>
+    function render() {
+      const posts = getPosts();
+      document.getElementById('count').textContent = `${posts.length}개의 기록`;
+      postsElement.replaceChildren();
+      if (!posts.length) { postsElement.innerHTML = '<div class="empty">아직 남겨둔 조각이 없어요.<br>첫 번째 기록을 시작해 볼까요?</div>'; return; }
+      posts.forEach(post => {
+        const article = document.createElement('article'); article.className = 'post';
+        const meta = document.createElement('div'); meta.className = 'post-meta';
+        meta.innerHTML = `<span class="avatar">${escapeInitial(post.title)}</span><div><div class="post-author">나의 기록</div><div class="post-time">${relativeTime(post.createdAt)}</div></div>`;
+        const title = document.createElement('h3'); title.className = 'post-title'; title.textContent = post.title;
+        const content = document.createElement('p'); content.className = 'post-content'; content.textContent = post.content;
+        article.append(meta, title, content);
+        if (post.media?.length) { const grid = document.createElement('div'); grid.className = 'media-grid'; post.media.forEach(item => { const el = document.createElement(item.type.startsWith('video/') ? 'video' : 'img'); el.src = item.src; el.alt = item.name || '첨부한 미디어'; if (el.tagName === 'VIDEO') el.controls = true; grid.append(el); }); article.append(grid); }
+        const actions = document.createElement('div'); actions.className = 'post-actions';
+        const like = document.createElement('button'); like.className = 'action'; like.textContent = `♡ 마음 ${post.likes || 0}`; like.onclick = () => updatePost(post.id, p => ({ ...p, likes: (p.likes || 0) + 1 }));
+        const del = document.createElement('button'); del.className = 'action delete'; del.textContent = '삭제'; del.onclick = () => { if (confirm('이 기록을 지울까요?')) { savePosts(getPosts().filter(p => p.id !== post.id)); render(); } };
+        actions.append(like, del); article.append(actions); postsElement.append(article);
+      });
+    }
+    function updatePost(id, update) { savePosts(getPosts().map(post => post.id === id ? update(post) : post)); render(); }
+    document.getElementById('toggle-form').onclick = () => { form.classList.toggle('open'); if (form.classList.contains('open')) document.getElementById('title').focus(); };
+    form.onsubmit = async event => {
+      event.preventDefault(); const title = document.getElementById('title').value.trim(); const content = document.getElementById('content').value.trim();
+      if (!title || !content) return;
+      const files = [...mediaInput.files];
+      const media = await Promise.all(files.map(file => new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve({ src: reader.result, type: file.type, name: file.name }); reader.onerror = reject; reader.readAsDataURL(file); })));
+      savePosts([{ id: crypto.randomUUID(), title, content, createdAt: new Date().toISOString(), likes: 0, media }, ...getPosts()]);
+      form.reset(); form.classList.remove('open'); render();
+    };
+    render();
+  </script>
 </body>
 </html>
